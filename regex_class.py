@@ -18,6 +18,37 @@ character, respectively. [abc] matches any character between the
 square brackets (such as a, b, or c).
 [^abc] matches any character that isn’t between the square brackets.
 (Hello) groups 'Hello' together as a single qualifier.
+
+
+
+Use of backlash ("\") in Regex:
+
+1/ escape character: to match literally characters that otherwise have special meanings:
+. * + ? ( )
+
+import re
+pattern = re.compile(r'\.')
+print(pattern.findall("a.b.c"))  # ['.', '.']
+
+2/ special sequences: to introduce shortcuts for common character classes:
+\d \D \w \W \s \S
+
+pattern = re.compile(r'\d+')
+print(pattern.findall("Room 42, Level 3"))  # ['42', '3']
+
+3/ group references in substitution: refer to captured groups when doing replacements with .sub()
+\1 (first group) \2 (second group, and so on)
+
+pattern = re.compile(r'(\w+) (\w+)')
+print(pattern.sub(r'\2, \1', "John Smith"))  # "Smith, John"
+
+4/ word boundaries and anchors: introduces anchors that match positions rather than characters
+\b (word boudary)  \B (non-word boundary)  \A (start of string) \Z (end of string)
+
+pattern = re.compile(r'\bcat\b')
+print(pattern.findall("The cat sat on the catalog"))  # ['cat']
+
+
 '''
 
 
@@ -396,7 +427,7 @@ import re
 agent_pattern = re.compile(r'Agent \w+')
 print(agent_pattern.sub('CENSORED', 'Agent Alice contacted Agent Bob.')) # CENSORED contacted CENSORED.
 
-# Back reference 
+# Back reference
 
 import re
 agent_pattern = re.compile(r'Agent (\w)\w*') # group 1 = first letter of agent's name
