@@ -1,0 +1,1 @@
+Regex (short for regular expressions) is a mini-language for describing search patterns in text. Regex is like a super-powered search tool, and knowing it in Python makes the text processing faster, cleaner, and less error-prone.
