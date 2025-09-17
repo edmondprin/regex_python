@@ -460,3 +460,10 @@ pattern = re.compile(r'''(
 
 some_regex = re.compile('foo', re.IGNORECASE | re.DOTALL)
 some_regex = re.compile('foo', re.IGNORECASE | re.DOTALL | re.VERBOSE)
+
+'''
+( ... ) = capturing groups: It “captures” whatever text matched, and you can refer back to it with .group(1) or \1 in substitutions.
+
+(?: ... ) = non-capturing groups: when you want parentheses only to group things together (for alternation, repetition, etc.) — but you don’t want to create a numbered group.
+
+'''
