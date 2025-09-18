@@ -1,4 +1,6 @@
 '''
+Special characters:
+
 The ? matches zero or one instance of the preceding qualifier (= optional)
 The * matches zero or more instances of the preceding qualifier.
 The + matches one or more instances of the preceding qualifier.
@@ -16,7 +18,7 @@ The \d, \w, and \s match a digit, word, or space character, respectively.
 The \D, \W, and \S match anything except a digit, word, or space
 character, respectively. [abc] matches any character between the
 square brackets (such as a, b, or c).
-[^abc] matches any character that isn’t between the square brackets.
+[^abc] matches any character that is not between the square brackets.
 (Hello) groups 'Hello' together as a single qualifier.
 
 
@@ -51,7 +53,7 @@ print(pattern.findall("The cat sat on the catalog"))  # ['cat']
 
 '''
 
-
+# Find phone number without regex (a bit convoluted)
 
 import re
 mar = "hello"
@@ -109,6 +111,30 @@ print('Done')
 3. Pass the text string to the Pattern object’s search() method to get a Match
 object.
 4. Call the Match object’s group() method to get the string of the matched text.
+
+
+re.compile builds a regex object you can reuse for searching, matching, substitution... It returns a pattern object with methods: Once compiled, you can call .search(), match(), fullmatch(), findall(), sub() on it.
+
+import re
+
+pattern = re.compile(r'\d{3}')  # 3 digits
+print(pattern.search("abc123xyz"))  # ✅ finds '123'
+print(pattern.findall("123 456 789"))  # ['123', '456', '789']
+
+
+
+
+re.fullmatch tests if the entire string matches a pattern, in one step. Returns a Match object if the whole string matches, otherwise returns None. Unline .search() which finds a substring, fullmatch() requires the entire string to match.
+
+import re
+
+print(re.fullmatch(r'\d{3}', "123"))   # ✅ Match (exactly 3 digits)
+print(re.fullmatch(r'\d{3}', "1234"))  # ❌ None (too many digits)
+print(re.fullmatch(r'\d{3}', "a123"))  # ❌ None (extra character)
+
+obj = re.fullmatch(r'\d{3}', "123")
+print(obj.group())
+
 '''
 # import re
 phone_num_pattern_obj = re.compile(r'\d{3}-\d{3}-\d{4}')
@@ -125,20 +151,22 @@ print(match_list)
 
 phone_re = re.compile(r'(\d\d\d)-(\d\d\d\-\d\d\d\d)')
 mo = phone_re.search("My number is 415-555-4242.")
-print(mo.group(1))  # returns first group of matched text
-print(mo.group(2))  # returns second group of matched text
-print(mo.group(0))  # returns full matched text
-print(mo.group())  # idem
-print(mo.groups())  # retrieve all groups at once in a tuple
+print(mo.group(1))  # 415: returns first group of matched text 
+print(mo.group(2))  # 555-4242: returns second group of matched text
+print(mo.group(0))  # 415-555-4242: returns full matched text
+print(mo.group())  # 415-555-4242: idem
+print(mo.groups())  # ('415', '555-4242'): retrieve all groups at once in a tuple
 area_code, phone_number = mo.groups()
-print(f"Area code: {area_code}")
-print(f"Phone number: {phone_number}")
+print(f"Area code: {area_code}") # Area code: 415
+print(f"Phone number: {phone_number}") # Phone number: 555-4242
 
 # Using escape characters
 pattern = re.compile(r'(\(\d\d\d\)) (\d\d\d\-\d\d\d\d)')
 mo = pattern.search("My phone number is (415) 555-4242.")
-print(mo.group(1))
-print(mo.group(2))
+print(mo.group(1)) # (415)
+print(mo.group(2)) # 555-4242
+
+pattern = re.compile(r'\(\d{3}\)\s?\d{3}-\d{4}') # Optional space
 
 # Special meaning: $ () * + - . ? [\] ^ {|}
 
@@ -150,8 +178,8 @@ import re
 words_to_find = re.compile(f'Cat|Dog', re.IGNORECASE)
 where_to_search_first = words_to_find.search("Hello, my name is Maia. I have 3 birds, 21 snakes, 10 cats and 5 dogs")
 matches= words_to_find.findall("Hello, my name is Maia. I have 3 birds, 21 snakes, 10 cats and 5 dogs")
-print(f"First: {where_to_search_first.group()}")
-print(f"All: {matches}")
+print(f"First: {where_to_search_first.group()}") # First: cat
+print(f"All: {matches}") # All: ['cat', 'dog']
 
 pattern = re.compile(r'Cat(erpillar|astrophe|ch|egory)')
 match = pattern.search('Catch me if you can.')
@@ -325,6 +353,30 @@ print(match == None) # True
 
 # Greedy and non-greedy matching
 # Python regex are greedy by default: in ambiguous situations, they will match the longest string possible.
+
+'''
+greedy quantifiers try to match as much text as possible, while still allowing the ovreall pattern to succeed:
+* -> zero or more
++ -> one or more
+? -> zero or one
+{m,n} -> between m and n occurences
+
+import re
+text = "<title>Hello World</title>"
+
+greedy = re.search(r'<.*>', text)
+print(greedy.group()) -> <title>Hello World</title>
+
+Non-greedy (lazy) quantifiers: adding a ? after a quantifier makes it non-greedy, so it matches the shortest possible string that allows the pattern to work:
+*? -> zero or more (shortest first)
++? -> one or more (shortest first)
+?? -> zero or one (prefers zero)
+{m,n}? -> between m and n (as few as possible)
+
+non_greedy = re.search(r'<.*?>', text)
+print(non_greedy.group()) -> <title>
+
+'''
 
 import re
 greedy_pattern = re.compile(r'(Ha){3,5}')
