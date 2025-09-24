@@ -213,7 +213,7 @@ qualifiers: r'\d' '-'
 quantifiers: '{3}' '{4}'
 '''
 
-# Using character classes and negative character classes
+# Using character classes [...] and negative character classes [^..]
 
 vowel_pattern = re.compile(r'[aeiouAEIOU]') # same as 'a | e | i | o | u | A | E | I | O | U
 print(len(vowel_pattern.findall("Maia")))
@@ -367,12 +367,11 @@ text = "<title>Hello World</title>"
 greedy = re.search(r'<.*>', text)
 print(greedy.group()) -> <title>Hello World</title>
 
-Non-greedy (lazy) quantifiers: adding a ? after a quantifier makes it non-greedy, so it matches the shortest possible string that allows the pattern to work:
+Non-greedy (lazy) quantifiers: adding a ? modifier after a quantifier makes it non-greedy, so it matches the shortest possible string that allows the pattern to work:
 *? -> zero or more (shortest first)
 +? -> one or more (shortest first)
 ?? -> zero or one (prefers zero)
 {m,n}? -> between m and n (as few as possible)
-
 non_greedy = re.search(r'<.*?>', text)
 print(non_greedy.group()) -> <title>
 

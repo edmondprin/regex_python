@@ -10,13 +10,32 @@ sentences. Those are annoying!!
 '''
 
 
-# Practice 1
+# Practice 1: websites searching
 import re
 
 text = "Last night I was curious about that story I read about wild animals. So I visited https://www.nationalgeo.org and also http://wildanimals.org "
 
 website_finder = re.compile(r'https?://[^\s]+')
 # [^\s]+ is the same as \S+
+# [...] is a character class: match one character from this set
+# ^ inside a character class, at the very start -> negation: match anything not in the set
+# \s -> any whitespace character (in Python Regex, this includes spaces, tabs, newlines, and most Unicode spaces)
+# + -> one or more of the preceding token, and it's greedy (it will take the longest run it can, then backtrack if needed)
+
+# Possessive: Match zero or one non-space character — but don’t backtrack.
+web_search = re.compile(r'https?://\S?+')
+find_web = web_search.findall(text)
+print(find_web) # ['https://w', 'http://w']
+
+# Lazy: match as few as possible but expand if needed
+web_search = re.compile(r'https?://\S+?')
+find_web = web_search.findall(text)
+print(find_web) # ['https://w', 'http://w']
+
+# Greedy search 
+web_search = re.compile(r'https?://\S+')
+find_web = web_search.findall(text)
+print(find_web) # ['https://www.nationalgeo.org', 'http://wildanimals.org']
 
 '''
 https? → matches http or https (s is optional).
@@ -31,7 +50,90 @@ find_those = website_finder.findall(text)
 print(find_those)
 
 
-# Practice #3
+# Practice 2: Dates formatting
+
+'''
+3/14/2030
+03-14-2030
+2030/3/14
+
+
+dates_pattern = re.compile(
+    r'(?:\d{1,2}/\d{1,2}/\d{2,4})'
+    r'|(?:\d{1,2}-\d{1,2}-\d{2,4})'
+    r'|(?:\d{2,4}/\d{1,2}/\d{1,2})'
+                        )
+find_dates = dates_pattern.findall("I was born on 3/14/2000 and became IM on 2-3-1996, and GMI on 02/12/23")
+find_dates2 = dates_pattern.findall("I was born last month and became GMI yesterday")
+
+if find_dates2:
+    print(find_dates2)
+else:
+    print("no dates found")
+
+
+try - except AttributeError useful with .search(), since returning None if nothing is found. Not useful with .findall() since it returns an empty list when nothing is found.
+.findall() with capturing groups returns a list of tuples, and a list with non-capturing groups.
+Possible to flatten the result tuples if sticking with capturung groups:
+dates = [d1 or d2 for d1, d2 in find_dates]
+print(dates)
+'''
+
+
+import re
+import datetime
+
+dates_pattern = re.compile(
+    r'(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})'   # mm/dd/yyyy or mm-dd-yyyy
+    r'|(\d{2,4})[/-](\d{1,2})[/-](\d{1,2})' # yyyy/mm/dd or yyyy-mm-dd
+)
+# Need to use capturing groups to handle the 2 possible formats (year first or at the end).
+# We must group the digits to actually extract month, day, year separately:
+# Group 1: month 
+# Group 2: day
+# Group 3: year
+# Group 4: year
+# Group 5: month
+# Group 6: day
+
+text = "I was born on 3/14/2000 and became IM on 2-3-1996, and GMI on 02/12/23, and will retire on 2030/3/14"
+
+matches = dates_pattern.findall(text)
+
+'''
+[('3', '14', '2000', '', '', ''), 
+ ('2', '3', '1996', '', '', ''), 
+ ('02', '12', '23', '', '', ''), 
+ ('', '', '', '2030', '3', '14')]
+'''
+
+parsed_dates = []
+for m, d, y, Y, M, D in matches:
+    if m:  # mm/dd/yyyy
+        month, day, year = int(m), int(d), int(y)
+    else:  # yyyy/mm/dd
+        year, month, day = int(Y), int(M), int(D)
+
+    # Normalize year to 4 digits
+    if year < 100:
+        if year < 50:
+            year += 2000
+        else:
+            year += 1900
+
+    parsed_dates.append((month, day, year))
+
+print(parsed_dates)
+
+# [(3, 14, 2000), (2, 3, 1996), (2, 12, 2023), (3, 14, 2030)]
+
+for month, day, year in parsed_dates:   # unpack the tuple
+    g = datetime.datetime(year, month, day)  # use the unpacked values
+    print(g)
+
+
+
+# Practice #3: Hide sensitive data
 
 import re
 
@@ -117,3 +219,33 @@ print("Matches:", matches)
 
 masked = sensitive_pattern.sub(mask_sensitive, text)
 print("Masked:", masked)
+
+
+# Practice 4: Typos finder 
+
+'''
+Typos removal tool:
+- multiple spaces between words
+- repeated words
+- multiple exclamation points
+'''
+
+
+
+def clean_text(text):
+    typo_1 = re.compile(r'(\s{2,})')
+    typo_2 = re.compile(r'!{2,}')
+    typo_3 = re.compile(r'\b(\w+)(?:\s+\1\b)+', re.IGNORECASE)
+    '''
+    \b = word boundary
+    (\w+) captures the first word.
+    ( \1\b)+ says: “one or more occurrences of a space followed by the same word, ending at a word boundary.”
+    IGNORECASE makes case differences irrelevant.
+    '''
+    clean_text = typo_1.sub(' ', text)        # remove extra spaces
+    clean_text = typo_2.sub('!', clean_text)  # fix exclamations
+    clean_text = typo_3.sub(r'\1', clean_text) # remove dup words
+    print(clean_text)
+
+clean_text("I was super lucky    lucky to be there      !!!")
+# "I was super lucky to be there !"
